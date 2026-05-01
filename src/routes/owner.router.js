@@ -7,4 +7,9 @@ router.get('/', (req, res) => {
     res.send('it works');
 });
 
+router.post('/create' , async (req, res) => {
+    res.send('it works');
+  
+});
+
 module.exports = router;
