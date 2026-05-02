@@ -1,37 +1,50 @@
 const mongoose = require('mongoose');
+const jwt = require('jsonwebtoken');
 
 const userSchema = new mongoose.Schema({
     username: {
-        type : String,
-        minlength: 3,
-     } ,
-    email:{ type: String, 
+        type: String,
         required: true,
-        unique: true ,
-    } ,
-    password: {type: String,
-        required: true,
-        minlength: 6
+        minlength: 3
     },
-    cart : [{  
-        productId: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Product'
-        },
-            quantity:{type: Number, default: 1}
-        }],
+    email: {
+        type: String,
+        required: true,
+        unique: true
+    },
+    password: {
+        type: String,
+        required: true,
+        minlength: 6,
+        select: false //  hide password
+    },
+
     isAdmin: {
         type: Boolean,
         default: false
     },
-    order: {
-        type: Array,
-        default: []
-    },
-    picture:{
+
+    cart: [{
+        productId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Product'
+        },
+        quantity: {
+            type: Number,
+            default: 1
+        }
+    }],
+
+    orders: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Order'
+    }],
+
+    picture: {
         type: String
     },
-    address : [{
+
+    address: [{
         street: String,
         city: String,
         state: String,
@@ -39,7 +52,17 @@ const userSchema = new mongoose.Schema({
         contact: String
     }]
 
-});
+}, { timestamps: true });
+
+
+// JWT Token method
+userSchema.methods.getSignedJwtToken = function () {
+    return jwt.sign(
+        { id: this._id },
+        process.env.JWT_SECRET,
+        { expiresIn: process.env.JWT_EXPIRE || '1d' }
+    );
+};
 
 const User = mongoose.model('User', userSchema);
 

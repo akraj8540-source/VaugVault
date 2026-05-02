@@ -1,10 +1,28 @@
 const express = require('express');
-const User = require('../models/user.model');
 const router = express.Router();
 
-// Route to display the user dashboard
-router.get('/', (req, res) => {
-    res.send('it works');
-});
+const { protect, isUser } = require('../middlewares/auth.middleware');
+
+const {
+    register,
+    login,
+    getUserProfile,
+    updateUserProfile,
+    addAddress,
+    deleteAddress
+} = require('../controllers/user.controller');
+
+
+// auth routes
+router.post('/register', register);
+router.post('/login', login);
+
+// user routes
+router.get('/profile', protect, isUser, getUserProfile);
+router.put('/profile', protect, isUser, updateUserProfile);
+
+// address
+router.post('/address', protect, isUser, addAddress);
+router.delete('/address/:addressId', protect, isUser, deleteAddress);
 
 module.exports = router;
