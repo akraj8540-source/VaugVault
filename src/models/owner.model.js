@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
 
 const OwnerSchema = new mongoose.Schema({
     username: {
@@ -19,7 +18,7 @@ const OwnerSchema = new mongoose.Schema({
         type: String,
         required: true,
         minlength: 6,
-        select: false // hide password
+        select: false
     },
 
     gstin: {
@@ -34,11 +33,10 @@ const OwnerSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Product'
     }]
-
 }, { timestamps: true });
 
 
-//  JWT method (for owner login)
+// JWT token
 OwnerSchema.methods.getSignedJwtToken = function () {
     return jwt.sign(
         { id: this._id, role: 'owner' },
@@ -46,21 +44,6 @@ OwnerSchema.methods.getSignedJwtToken = function () {
         { expiresIn: '1d' }
     );
 };
-
-// Hash password before saving
-OwnerSchema.pre('save', async function (next) {
-    if (!this.isModified('password')) {
-        return next();
-    }
-
-    try {
-        const salt = await bcrypt.genSalt(10);
-        this.password = await bcrypt.hash(this.password, salt);
-        next();
-    } catch (error) {
-        next(error);
-    }
-});
 
 const Owner = mongoose.model('Owner', OwnerSchema);
 

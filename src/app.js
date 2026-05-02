@@ -6,7 +6,7 @@ const cookieParser = require('cookie-parser');
 const app = express();
 
 
-// ================= MIDDLEWARE =================
+// MIDDLEWARE
 app.use(cors({
     origin: true,
     credentials: true
@@ -18,7 +18,7 @@ app.use(express.urlencoded({ extended: true }));
 //app.set('view engine', 'ejs');
 
 
-// ================= ROUTES =================
+//  ROUTES 
 app.use('/user', require('./routes/user.router'));
 app.use('/owner', require('./routes/owner.router'));
 app.use('/product', require('./routes/product.router'));
@@ -26,13 +26,13 @@ app.use('/cart', require('./routes/cart.router'));
 app.use('/order', require('./routes/order.router'));
 
 
-// ================= HEALTH CHECK =================
+//  HEALTH CHECK 
 app.get('/', (req, res) => {
     res.send('API is running...');
 });
 
 
-// ================= ERROR HANDLER =================
+//  ERROR HANDLER
 app.use((err, req, res, next) => {
     console.error(err.message);
 

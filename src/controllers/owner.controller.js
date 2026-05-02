@@ -2,23 +2,30 @@ const Owner = require('../models/owner.model');
 const bcrypt = require('bcrypt');
 
 
-// register owner
+//  REGISTER OWNER 
 const registerOwner = async (req, res) => {
     try {
         const { username, email, password, gstin } = req.body;
 
         // validation
         if (!username || !email || !password) {
-            return res.status(400).json({ message: 'All fields are required' });
+            return res.status(400).json({
+                success: false,
+                message: 'All fields are required'
+            });
         }
 
         // check existing owner
         const existingOwner = await Owner.findOne({ email });
+
         if (existingOwner) {
-            return res.status(400).json({ message: 'Email already in use' });
+            return res.status(400).json({
+                success: false,
+                message: 'Email already in use'
+            });
         }
 
-        // password will be hashed in model (pre-save)
+        // create owner (password will be hashed in model if pre-save exists)
         const owner = await Owner.create({
             username,
             email,
@@ -29,47 +36,73 @@ const registerOwner = async (req, res) => {
         sendTokenResponse(owner, 201, res);
 
     } catch (error) {
-        res.status(500).json({ message: 'Server error' });
+        console.log("REGISTER OWNER ERROR:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
     }
 };
 
 
-// login owner
+//  LOGIN OWNER 
 const loginOwner = async (req, res) => {
     try {
         const { email, password } = req.body;
 
         // validation
         if (!email || !password) {
-            return res.status(400).json({ message: 'All fields are required' });
+            return res.status(400).json({
+                success: false,
+                message: 'All fields are required'
+            });
         }
 
         // get owner with password
         const owner = await Owner.findOne({ email }).select('+password');
 
         if (!owner) {
-            return res.status(400).json({ message: 'Invalid credentials' });
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid credentials'
+            });
         }
 
         // compare password
         const isMatch = await bcrypt.compare(password, owner.password);
 
         if (!isMatch) {
-            return res.status(400).json({ message: 'Invalid credentials' });
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid credentials'
+            });
         }
 
         sendTokenResponse(owner, 200, res);
 
     } catch (error) {
-        res.status(500).json({ message: 'Server error' });
+        console.log("LOGIN OWNER ERROR:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
     }
 };
 
 
-// get current owner
+//  GET OWNER PROFILE 
 const getOwnerProfile = async (req, res) => {
     try {
         const owner = await Owner.findById(req.user._id);
+
+        if (!owner) {
+            return res.status(404).json({
+                success: false,
+                message: 'Owner not found'
+            });
+        }
 
         res.status(200).json({
             success: true,
@@ -84,12 +117,17 @@ const getOwnerProfile = async (req, res) => {
         });
 
     } catch (error) {
-        res.status(500).json({ message: 'Server error' });
+        console.log("PROFILE ERROR:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
     }
 };
 
 
-// logout owner
+//  LOGOUT OWNER 
 const logoutOwner = (req, res) => {
     res.cookie('token', '', {
         expires: new Date(0),
@@ -103,7 +141,7 @@ const logoutOwner = (req, res) => {
 };
 
 
-// helper to send token response
+//  TOKEN RESPONSE 
 const sendTokenResponse = (owner, statusCode, res) => {
     const token = owner.getSignedJwtToken();
 
@@ -114,20 +152,18 @@ const sendTokenResponse = (owner, statusCode, res) => {
         secure: process.env.NODE_ENV === 'production'
     };
 
-    res
-        .status(statusCode)
-        .cookie('token', token, options)
-        .json({
-            success: true,
-            token,
-            owner: {
-                id: owner._id,
-                username: owner.username,
-                email: owner.email,
-                gstin: owner.gstin
-            }
-        });
+    res.status(statusCode).cookie('token', token, options).json({
+        success: true,
+        token,
+        owner: {
+            id: owner._id,
+            username: owner.username,
+            email: owner.email,
+            gstin: owner.gstin
+        }
+    });
 };
+
 
 
 module.exports = {
