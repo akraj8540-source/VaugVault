@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/user.model');
 
 
-// ================= REGISTER =================
+// REGISTER 
 const register = async (req, res) => {
     try {
         const { username, email, password } = req.body;
@@ -34,8 +34,7 @@ const register = async (req, res) => {
 
         const token = jwt.sign(
             { id: user._id },
-            process.env.JWT_SECRET,
-            { expiresIn: '1d' }
+            process.env.JWT_SECRET
         );
 
         res.cookie('token', token, {
@@ -64,7 +63,7 @@ const register = async (req, res) => {
 };
 
 
-// ================= LOGIN =================
+//  LOGIN 
 const login = async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -126,7 +125,7 @@ const login = async (req, res) => {
 };
 
 
-// ================= LOGOUT =================
+// LOGOUT 
 const logout = (req, res) => {
     res.cookie('token', '', {
         httpOnly: true,
@@ -140,7 +139,7 @@ const logout = (req, res) => {
 };
 
 
-// ================= GET CURRENT USER =================
+// GET CURRENT USER
 const getMe = async (req, res) => {
     try {
         const user = await User.findById(req.user.id);
@@ -163,10 +162,8 @@ const getMe = async (req, res) => {
             message: error.message || 'Server error'
         });
     }
-};
+}; 
 
-
-// ================= EXPORT =================
 module.exports = {
     register,
     login,

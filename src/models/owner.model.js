@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
 
 const OwnerSchema = new mongoose.Schema({
     username: {
@@ -18,9 +19,12 @@ const OwnerSchema = new mongoose.Schema({
         type: String,
         required: true,
         minlength: 6,
-        select: false
+        
     },
-
+isAdmin: {
+    type: Boolean,
+    default: true
+},
     gstin: {
         type: String
     },
@@ -44,6 +48,9 @@ OwnerSchema.methods.getSignedJwtToken = function () {
         { expiresIn: '1d' }
     );
 };
+
+
+
 
 const Owner = mongoose.model('Owner', OwnerSchema);
 
